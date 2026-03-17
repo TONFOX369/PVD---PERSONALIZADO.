@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-primary: #00ff00;
+  --color-bg-dark: #0b120b;
+  --color-surface: #162516;
+  --color-border: #273a27;
+
+  /* Light Mode Variables */
+  --color-bg-light: #f8fafc;
+  --color-surface-light: #ffffff;
+  --color-border-light: #e2e8f0;
+  --color-text-light: #1e293b;
+  --color-text-muted-light: #64748b;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-dark text-slate-300 font-display antialiased transition-colors duration-300;
+  }
+
+  .light body {
+    @apply bg-bg-light text-text-light;
+  }
+}
+
+@layer components {
+  .neon-glow {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.15);
+  }
+  
+  .glass-panel {
+    @apply bg-surface/40 backdrop-blur-md border border-border transition-all;
+  }
+
+  .light .glass-panel {
+    @apply bg-surface-light border-border-light shadow-sm;
+  }
+
+  .light .bg-bg-dark { @apply bg-bg-light; }
+  .light .bg-surface { @apply bg-surface-light; }
+  .light .border-border { @apply border-border-light; }
+  .light .text-slate-300 { @apply text-text-light; }
+  .light .text-slate-500 { @apply text-text-muted-light; }
+  .light .text-slate-600 { @apply text-text-muted-light; }
+  .light .text-white { @apply text-slate-900; }
+  .light .bg-bg-dark\/80 { @apply bg-bg-light/80; }
+  .light .bg-surface\/10 { @apply bg-slate-100; }
+  .light .bg-surface\/30 { @apply bg-white; }
+  .light .bg-surface\/50 { @apply bg-slate-50; }
+  .light .bg-primary\/10 { @apply bg-primary/20; }
+  .light .bg-primary\/5 { @apply bg-primary/10; }
+  .light .bg-surface\/20 { @apply bg-slate-50; }
+  .light .bg-surface\/40 { @apply bg-white; }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  .light .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-300;
+  }
+
+  /* PDV Specific Styles */
+  .pdv-text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+}
+
+@media print {
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .ticket-container {
+    width: 80mm !important;
+    margin: 0 !important;
+    padding: 5mm !important;
+    background: white !important;
+  }
+
+  /* Ensure all text is black and backgrounds are white */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

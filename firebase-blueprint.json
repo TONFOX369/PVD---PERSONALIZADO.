@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "article": {
+      "title": "Article",
+      "description": "A documentation article",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the article" },
+        "content": { "type": "string", "description": "The markdown content of the article" },
+        "category": { "type": "string", "description": "The category (e.g., PDV, Financeiro)" },
+        "authorId": { "type": "string", "description": "The UID of the author" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["title", "content", "category", "authorId"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "A product for sale",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Product name" },
+        "price": { "type": "number", "description": "Product price" },
+        "category": { "type": "string", "description": "Product category" },
+        "img": { "type": "string", "description": "Product image URL" },
+        "userId": { "type": "string", "description": "The UID of the owner" }
+      },
+      "required": ["name", "price", "category", "userId"]
+    },
+    "sale": {
+      "title": "Sale",
+      "description": "A completed sale",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the seller" },
+        "items": { "type": "array", "description": "List of items sold" },
+        "total": { "type": "number", "description": "Total sale amount" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Sale timestamp" }
+      },
+      "required": ["userId", "items", "total", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/articles/{articleId}": {
+      "schema": "article",
+      "description": "Collection of documentation articles"
+    },
+    "/products/{productId}": {
+      "schema": "product",
+      "description": "Collection of products"
+    },
+    "/sales/{saleId}": {
+      "schema": "sale",
+      "description": "Collection of completed sales"
+    }
+  }
+}
