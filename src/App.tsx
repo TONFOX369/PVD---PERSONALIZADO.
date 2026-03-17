@@ -46,7 +46,8 @@ enum View {
   USERS = 'users',
   SETTINGS = 'settings',
   PDV = 'pdv',
-  PRODUCTS = 'products'
+  PRODUCTS = 'products',
+  SALES = 'sales'
 }
 
 // --- Constants ---
@@ -140,6 +141,7 @@ export default function App() {
   const [pdvQty, setPdvQty] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('Dinheiro');
   const [amountReceived, setAmountReceived] = useState<number | ''>('');
+  const [discount, setDiscount] = useState<number | ''>('');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [saleSuccess, setSaleSuccess] = useState(false);
 
@@ -439,11 +441,14 @@ export default function App() {
     try {
       const received = typeof amountReceived === 'number' ? amountReceived : cartTotal;
       const change = paymentMethod === 'Dinheiro' && received > cartTotal ? received - cartTotal : 0;
+      const discountValue = typeof discount === 'number' ? discount : 0;
 
       const saleData = {
         userId: user.uid,
         items: cart,
         total: cartTotal,
+        subtotal: subtotal,
+        discount: discountValue,
         paymentMethod,
         amountReceived: received,
         change: change,
@@ -464,6 +469,7 @@ export default function App() {
       setSaleSuccess(true);
       setCart([]);
       setAmountReceived('');
+      setDiscount('');
       setPaymentMethod('Dinheiro');
       setShowTicket(true);
       setTimeout(() => setSaleSuccess(false), 3000);
@@ -579,7 +585,9 @@ export default function App() {
     }
   }, [showTicket, lastSale, handlePrint]);
 
-  const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+  const discountValue = typeof discount === 'number' ? discount : 0;
+  const cartTotal = Math.max(0, subtotal - discountValue);
   const displayChange = (typeof amountReceived === 'number' ? amountReceived : 0) - cartTotal;
 
   if (!isAuthReady) return (
@@ -887,8 +895,6 @@ export default function App() {
             {/* PDV Header */}
             <div className="bg-[#004d40] px-6 py-3 flex justify-between items-center border-b-4 border-[#00332c] shrink-0">
               <div className="flex items-center gap-4">
-                <div className="bg-white text-[#004d40] px-3 py-1 rounded font-black text-2xl italic tracking-tighter">GMAX</div>
-                <div className="h-8 w-px bg-white/20 mx-2"></div>
                 <div className="text-white">
                   <p className="text-[10px] font-bold opacity-50 uppercase leading-none">Terminal</p>
                   <p className="text-sm font-bold">CAIXA_01</p>
@@ -984,6 +990,18 @@ export default function App() {
                       <div className="bg-[#008080] text-white p-1.5 font-bold text-center rounded text-[10px] uppercase">{paymentMethod}</div>
                     </div>
                     <div className="space-y-0">
+                      <p className="text-[8px] font-bold text-[#008080] uppercase opacity-70">Desconto R$</p>
+                      <input 
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discount}
+                        onChange={(e) => setDiscount(e.target.value ? parseFloat(e.target.value) : '')}
+                        placeholder="0.00"
+                        className="w-full bg-slate-100 text-[#008080] p-1.5 font-bold text-right rounded text-[10px] outline-none focus:ring-1 focus:ring-[#008080] placeholder:text-[#008080]/50"
+                      />
+                    </div>
+                    <div className="space-y-0">
                       <p className="text-[8px] font-bold text-[#008080] uppercase opacity-70">Recebido</p>
                       {paymentMethod === 'Dinheiro' ? (
                         <input 
@@ -998,10 +1016,6 @@ export default function App() {
                       ) : (
                         <div className="bg-[#008080] text-white p-1.5 font-bold text-right rounded text-[10px]">R$ {cartTotal.toFixed(2)}</div>
                       )}
-                    </div>
-                    <div className="space-y-0">
-                      <p className="text-[8px] font-bold text-[#008080] uppercase opacity-70">Saldo</p>
-                      <div className="bg-[#008080] text-white p-1.5 font-bold text-right rounded text-[10px]">R$ {cartTotal.toFixed(2)}</div>
                     </div>
                     <div className="space-y-0">
                       <p className="text-[8px] font-bold text-[#008080] uppercase opacity-70">Troco</p>
@@ -1165,6 +1179,71 @@ export default function App() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {currentView === View.SALES && (
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-10 bg-slate-50">
+            <div className="max-w-6xl mx-auto h-full flex flex-col">
+              <div className="flex justify-between items-center mb-10 shrink-0">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900 tracking-tight uppercase">Histórico de Vendas</h2>
+                  <p className="text-slate-500 text-sm uppercase tracking-widest mt-1">Acompanhe todas as vendas realizadas no PDV</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 overflow-hidden flex flex-col">
+                <div className="overflow-y-auto flex-1 custom-scrollbar">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                      <tr>
+                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Data/Hora</th>
+                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Itens</th>
+                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Pagamento</th>
+                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase text-right">Total</th>
+                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {sales.map(sale => (
+                        <tr key={sale.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 text-sm text-slate-800">
+                            {sale.createdAt?.toDate ? sale.createdAt.toDate().toLocaleString() : new Date(sale.createdAt).toLocaleString()}
+                          </td>
+                          <td className="p-4 text-sm text-slate-600">
+                            {sale.items?.length || 0} itens
+                          </td>
+                          <td className="p-4 text-sm text-slate-600">
+                            <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold uppercase">
+                              {sale.paymentMethod || 'Dinheiro'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-sm font-bold text-emerald-600 text-right">
+                            R$ {sale.total.toFixed(2)}
+                          </td>
+                          <td className="p-4 text-sm text-center">
+                            <button 
+                              onClick={() => {
+                                setLastSale(sale);
+                                setShowTicket(true);
+                              }}
+                              className="text-emerald-600 hover:text-emerald-700 font-bold text-xs uppercase tracking-widest px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors"
+                            >
+                              Ver Recibo
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {sales.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-slate-500 uppercase tracking-widest text-sm">Nenhuma venda registrada ainda.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         )}
